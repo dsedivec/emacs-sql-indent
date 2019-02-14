@@ -1121,7 +1121,7 @@ reverse order (a stack) and is used to skip over nested blocks."
 ;;;;; Determine the syntax inside an update statement
 
 (defconst sqlind-update-clauses-regexp
-  "\\_<\\(update\\|set\\|where\\)\\_>")
+  (regexp-opt '("update" "set" "from" "where" "returning") 'symbols))
 
 (defun sqlind-syntax-in-update (pos start)
   "Return the syntax at POS which is inside an \"update\" statement at START."
