@@ -874,7 +874,8 @@ reverse order (a stack) and is used to skip over nested blocks."
             (sqlind-maybe-else-statement)
             (sqlind-maybe-loop-statement)
             (sqlind-maybe-begin-statement)
-            (when (eq sql-product 'oracle) ; declare statements only start blocks in PL/SQL
+            ;; declare statements only start blocks in PL/SQL or PL/pgSQL
+            (when (memq sql-product '(oracle postgres))
               (sqlind-maybe-declare-statement))
             (when (eq sql-product 'postgres)
               (sqlind-maybe-$$-statement))
