@@ -918,6 +918,10 @@ reverse order (a stack) and is used to skip over nested blocks."
 (defconst sqlind-with-clauses-regexp
   "\\_<\\(with\\|recursive\\)\\_>")
 
+(defconst sqlind-statements-may-have-cte-regexp
+  (regexp-opt '("select" "insert" "update" "delete") 'symbols)
+  "Regexp matching DML statements.")
+
 (defun sqlind-syntax-in-with (pos start)
   "Return the syntax at POS which is part of a \"with\" statement at START."
   (save-excursion
@@ -926,12 +930,20 @@ reverse order (a stack) and is used to skip over nested blocks."
       (cond
         ((looking-at sqlind-with-clauses-regexp)
          (throw 'finished (cons 'with-clause start)))
-        ((and (looking-at "\\_<select\\_>")
+        ((and (looking-at sqlind-statements-may-have-cte-regexp)
               (sqlind-same-level-statement (point) start))
          (throw 'finished (cons 'with-clause start))))
-      (while (re-search-backward "\\_<select\\_>" start 'noerror)
+      (while (re-search-backward sqlind-statements-may-have-cte-regexp
+                                 start 'noerror)
         (when (sqlind-same-level-statement (point) start)
-          (throw 'finished (sqlind-syntax-in-select pos (point)))))
+          (throw 'finished
+            ;; See also `sqlind-refine-syntax' which has a `cond'
+            ;; block that sort of serves this purpose.  (That
+            ;; `cond' is also the route into this function,
+            ;; `sqlind-syntax-in-with', BTW.)
+            (funcall (intern (format "sqlind-syntax-in-%s"
+                                     (sqlind-match-string 0)))
+                     pos (point)))))
       (goto-char pos)
       (when (looking-at "\\_<as\\_>")
         (throw 'finished (cons 'with-clause-cte-cont start)))
@@ -2037,7 +2049,7 @@ Argument BASE-INDENTATION is updated."
   (cl-destructuring-bind ((_sym clause) . anchor) (car syntax)
     (save-excursion
       (goto-char anchor)
-      (forward-char (1+ (length clause)))
+      (forward-char (length clause))
       (skip-syntax-forward " ")
       (if (or (looking-at sqlind-comment-start-skip)
               (eolp))
