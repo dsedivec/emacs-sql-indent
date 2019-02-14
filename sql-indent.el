@@ -1433,7 +1433,11 @@ not a statement-continuation POS is the same as the
              ;; Look for a join expression inside a nested statement, see #70
 	     (goto-char pos)
 	     (when (or (looking-at sqlind-join-condition-regexp)
-		       (progn (forward-word -1) (looking-at sqlind-join-condition-regexp)))
+		       (progn
+                         (sqlind-backward-syntactic-ws)
+                         (forward-word -1)
+                         (and (< anchor (point))
+                              (looking-at sqlind-join-condition-regexp))))
 	       ;; look for the join start, that will be the anchor
                (when (sqlind-search-backward (point) "\\bjoin\\b" anchor)
                  (let ((candidate (point)))

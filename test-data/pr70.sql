@@ -37,3 +37,26 @@ select (a
         join b
             on a.k1 = b.k2) -- this is a select-join-condition (hey! we're not an sql parser
   from a, b;
+
+create or replace view some_view as
+  with t1 AS
+  (
+    select
+      foo
+      from
+          bar
+     where
+       baz
+   and (
+     -- putting or in this comment shouldn't look like a nested join: or
+     foo.col > (
+       select
+         max(some_stuff)
+         from
+             this_other_table
+        where
+          an_id = foo.id
+     )
+   )
+  )
+select * from t1;
