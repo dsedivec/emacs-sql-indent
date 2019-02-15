@@ -260,7 +260,7 @@ symbols and their meaning."
 
 (defconst sqlind-sqlplus-directive
   (concat ;; SET is handled in a special way, to avoid conflicts with the SET
-          ;; keyworkd in updated clauses
+          ;; keyword in updated clauses
           "\\(^set\\s-+\\w+\\(\\s-+[^=].*\\)?$\\)\\|\\(^"
 	  (regexp-opt '("column" "rem" "define" "spool" "prompt"
                         "clear" "compute" "whenever" "@" "@@" "start")
