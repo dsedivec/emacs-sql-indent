@@ -676,13 +676,18 @@ present."
 (defun sqlind-maybe-create-statement ()
   "If (point) is on a CREATE statement, report its syntax.
 See also `sqlind-beginning-of-block'"
-  (when (or (looking-at "create\\_>\\(?:[ \t\n\r\f]+\\)\\(or\\(?:[ \t\n\r\f]+\\)replace\\_>\\)?")
-            (looking-at "alter\\_>"))
+  (when (looking-at "\\(create\\|alter\\)\\_>")
     (prog1 t                            ; make sure we return t
       (save-excursion
 	;; let's see what are we creating
 	(goto-char (match-end 0))
         (sqlind-forward-syntactic-ws)
+        (when (re-search-forward "\\=or\\_>" nil t)
+          (sqlind-forward-syntactic-ws)
+          (re-search-forward "\\=replace\\_>" nil t)
+          (sqlind-forward-syntactic-ws))
+        (when (re-search-forward "\\=temp\\(orary\\)?\\_>" nil t)
+          (sqlind-forward-syntactic-ws))
         (sqlind-maybe-skip-mysql-create-options)
 	(let ((what (intern (downcase (buffer-substring-no-properties
 				       (point)
